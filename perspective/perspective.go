@@ -6,10 +6,40 @@ import (
 	"net/http"
 )
 
+type Request struct {
+	Comment             `json:"comment"`
+	RequestedAttributes struct {
+		TOXICITY struct {
+		} `json:"TOXICITY"`
+	} `json:"requested_attributes"`
+	ClientToken string `json:"client_token"`
+}
+
+type Comment struct {
+	Text string `json:"text"`
+}
+
+type RequestedAttributes struct {
+	TOXICITY struct{} `json:"TOXICITY"`
+}
+
 //GetToxicity calculates the toxicity of a given string, returning a float64 of the decimal percentage
 func GetToxicity(comment string) float64 {
-	var jsonStr = []byte(`{"comment":{"text":"` + comment + `"},"requested_attributes":{"TOXICITY":{}},"client_token":"issecretshh"}`)
-	resp, _ := http.Post("http://www.perspectiveapi.com/check", "application/json", bytes.NewBuffer(jsonStr))
+	var request struct {
+		Comment struct {
+			Text string `json:"text"`
+		} `json:"comment"`
+		RequestedAttributes struct {
+			TOXICITY struct {
+			} `json:"TOXICITY"`
+		} `json:"requested_attributes"`
+		ClientToken string `json:"client_token"`
+	}
+	request.Comment.Text = comment
+	request.ClientToken = "issecretshh"
+	b := new(bytes.Buffer)
+	json.NewEncoder(b).Encode(request)
+	resp, _ := http.Post("http://www.perspectiveapi.com/check", "application/json", b)
 	var toxicity struct {
 		AttributeScores struct {
 			TOXICITY struct {

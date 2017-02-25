@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/jzelinskie/geddit"
 	"github.com/notdisliked/pheddit/perspective"
@@ -13,12 +14,16 @@ func main() {
 	session := geddit.NewSession("gedditAgent v1")
 	subOpts := geddit.ListingOptions{
 		Limit: 100,
+		Time:  geddit.ThisMonth,
 	}
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("Enter text: ")
+	fmt.Print("Select subreddit for scanning: /r/")
 	text, _ := reader.ReadString('\n')
-	text = text[:len(text)-1]
-	submissions, _ := session.SubredditSubmissions(text, geddit.TopSubmissions, subOpts)
+	text = strings.Trim(text, "\r\n")
+	submissions, err := session.SubredditSubmissions(text, geddit.TopSubmissions, subOpts)
+	if err != nil {
+		panic(err)
+	}
 	var total float64
 	for _, submission := range submissions {
 		title := submission.Title
